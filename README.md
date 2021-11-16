@@ -20,6 +20,7 @@ Obsah textové části
 5. Závěr - zhodnocení výsledků
 
 ###Motivacia 🥵
+
 ####Poznámky:
 
 Výše stipendia je závislá na dosažených výsledcích. Uvedená částka je za semestr.
