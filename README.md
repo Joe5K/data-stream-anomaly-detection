@@ -19,12 +19,11 @@ Obsah textové části
 4. Experimenty, měření, vyhodnocení (možno použít tabulky a grafy)
 5. Závěr - zhodnocení výsledků
 
-🥵
-###Motivacia
+### Motivacia 🥵
 
-####Poznámky:
+#### Poznámky:
 
 Výše stipendia je závislá na dosažených výsledcích. Uvedená částka je za semestr.
 
-####Stipendium:
+#### Stipendium:
 5000 Kč
