@@ -19,7 +19,8 @@ Obsah textové části
 4. Experimenty, měření, vyhodnocení (možno použít tabulky a grafy)
 5. Závěr - zhodnocení výsledků
 
-###Motivacia 🥵
+🥵
+###Motivacia
 
 ####Poznámky:
 
