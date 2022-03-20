@@ -25,4 +25,3 @@ Cílem práce je popsat metody pro analýzy datových toků sae zamřením na zm
 5000 Kč
 
 Výše stipendia je závislá na dosažených výsledcích. Uvedená částka je za semestr.
-
