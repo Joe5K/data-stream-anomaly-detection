@@ -25,6 +25,7 @@ class WindowManager:
         with open(filename, "r") as input_stream:
             self.input_stream = input_stream
             self.initialize()
-            #TODO nacitavanie dalsich dat, porovnavanie s windows, posuvanie windows
+            # TODO nacitavanie dalsich dat, porovnavanie s windows, posuvanie windows
+
 
 WindowManager().analyze("data/dataverse/mixed_0101_gradual.csv")
