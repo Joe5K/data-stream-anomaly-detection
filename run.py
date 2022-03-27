@@ -24,14 +24,14 @@ class WindowManager:
 
     def move(self, input_data: str):
         new_vector = Vector.generate_vector(input_data)
+        variation = self.windows[-1].compare_vector(new_vector)
+        print(variation)
         for window in self.windows[::-1]:
-            variation = window.compare_vector(new_vector)
+            #variation = window.compare_vector(new_vector)
             new_vector = window.load_vector(new_vector)
-            print(variation) # TODO hladanie posunov :)
+           # print(variation)  # TODO hladanie posunov, skor porovnavanie jednotlivych windows nez len aktualnych dat
 
         print(f"Popping old vector: {new_vector}")
-
-
 
     def analyze(self, filename: str):
         with open(filename, "r") as input_stream:
