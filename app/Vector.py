@@ -1,6 +1,6 @@
 from typing import List
 
-from config import LAST_COL_IS_CLASS
+from config import LAST_COL_IS_CLASS, SEPARATOR
 
 
 class Vector:
@@ -10,6 +10,12 @@ class Vector:
             self.cls = data[-1]
         else:
             self.data = tuple(float(i) for i in data)
+
+    @staticmethod
+    def generate_vector(input_line):
+        data = input_line.replace("\n", "").split(SEPARATOR)
+        vector = Vector(data)
+        return vector
 
     def __len__(self) -> int:
         return len(self.data)

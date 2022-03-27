@@ -2,6 +2,7 @@
 from io import TextIOWrapper
 from typing import List, TextIO, Optional
 
+from app.Vector import Vector
 from config import SKIP_FIRST_LINE, WINDOWS_NUMBER
 from app.Window import Window
 
@@ -9,23 +10,35 @@ from app.Window import Window
 class WindowManager:
     def __init__(self):
         self.windows: List[Window] = []
-        self.input_stream: Optional[TextIO] = None
 
-    def initialize(self):
+    def initialize(self, input_stream):
         if SKIP_FIRST_LINE:
-            self.input_stream.readline()
+            input_stream.readline()
 
         for i in range(WINDOWS_NUMBER):
             window = Window()
             while not window.is_loaded:
-                window.load_line(self.input_stream.readline())
+                new_vector = Vector.generate_vector(input_stream.readline())
+                window.load_vector(new_vector)
             self.windows.append(window)
+
+    def move(self, input_data: str):
+        new_vector = Vector.generate_vector(input_data)
+        for window in self.windows[::-1]:
+            variation = window.compare_vector(new_vector)
+            new_vector = window.load_vector(new_vector)
+            print(variation) # TODO hladanie posunov :)
+
+        print(f"Popping old vector: {new_vector}")
+
+
 
     def analyze(self, filename: str):
         with open(filename, "r") as input_stream:
-            self.input_stream = input_stream
-            self.initialize()
-            # TODO nacitavanie dalsich dat, porovnavanie s windows, posuvanie windows
+            self.initialize(input_stream)
+
+            while input_data := input_stream.readline():
+                self.move(input_data)
 
 
 WindowManager().analyze("data/dataverse/mixed_0101_gradual.csv")

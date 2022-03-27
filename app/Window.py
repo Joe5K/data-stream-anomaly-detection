@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from config import SEPARATOR, WINDOW_SIZE
 from app.Vector import Vector
@@ -8,11 +8,18 @@ class Window:
     def __init__(self):
         self.data: List[Vector] = []
 
-    def load_line(self, line: str) -> None:
+    def load_vector(self, input_vector: Vector) -> Optional[Vector]:
+        popping_vector = None
         if self.is_loaded:
-            self.data.pop(0)
-        data = line.replace("\n", "").split(SEPARATOR)
-        self.data.append(Vector(data))
+            popping_vector = self.data.pop(0)
+        self.data.append(input_vector)
+        return popping_vector
+
+    def compare_vector(self, new_vector: Vector) -> float:
+        variation = 0
+        for i, j in zip(new_vector, self.mean.get(new_vector.cls)):
+            variation += (i - j)**2
+        return variation
 
     @property
     def classes(self) -> List[str]:
@@ -23,7 +30,7 @@ class Window:
         return classes
 
     @property
-    def classed_data(self):
+    def classified_data(self):
         classed_data = {i: [] for i in self.classes}
         for i in self.data:
             classed_data[i.cls].append(i.data)
@@ -39,8 +46,8 @@ class Window:
     def mean(self) -> dict[str, tuple[float]]:
         means = {}
 
-        for class_name, class_data in self.classed_data.items():
-            sum_vector = [0] * len(self.data[0])
+        for class_name, class_data in self.classified_data.items():
+            sum_vector = [0] * len(class_data[0])
 
             for vector in class_data:
                 for index, value in enumerate(vector):
@@ -52,8 +59,8 @@ class Window:
     def variance(self) -> dict[str, tuple[float]]:
         variances = {}
 
-        for class_name, class_data in self.classed_data.items():
-            sum_vector = [0] * len(self.data[0])
+        for class_name, class_data in self.classified_data.items():
+            sum_vector = [0] * len(class_data[0])
 
             for vector in class_data:
                 for index, value in enumerate(vector):
