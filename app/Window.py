@@ -23,11 +23,7 @@ class Window:
 
     @property
     def classes(self) -> List[str]:
-        classes = []
-        for i in self.data:
-            if i.cls not in classes:
-                classes.append(i.cls)
-        return classes
+        return list({i.cls for i in self.data})
 
     @property
     def classified_data(self):
