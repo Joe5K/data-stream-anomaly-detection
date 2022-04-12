@@ -64,5 +64,8 @@ class Window:
             variances[class_name] = tuple(i/len(class_data) for i in sum_vector)
         return variances
 
+    def variance_distance(self, other_window):  # TODO
+        return True
+
     def __repr__(self) -> str:
         return str(self.mean)

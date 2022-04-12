@@ -22,13 +22,21 @@ class WindowManager:
                 window.load_vector(new_vector)
             self.windows.append(window)
 
+    def compare_windows(self, first: int, second: int):
+        first_window = self.windows[first]
+        second_window = self.windows[second]
+        return first_window.variance_distance(second_window)
+
+
     def move(self, input_data: str):
         new_vector = Vector.generate_vector(input_data)
-        variation = self.windows[-1].compare_vector(new_vector)
-        print(variation)
-        for window in self.windows[::-1]:
-            #variation = window.compare_vector(new_vector)
+        for count, window in enumerate(self.windows[::-1]):
+            index = len(self.windows) - 1 - count
+            if index > 0:
+                self.compare_windows(index, index-1)
             new_vector = window.load_vector(new_vector)
+            if index > 0:
+                self.compare_windows(index, index-1)
            # print(variation)  # TODO hladanie posunov, skor porovnavanie jednotlivych windows nez len aktualnych dat
 
         print(f"Popping old vector: {new_vector}")
@@ -41,4 +49,5 @@ class WindowManager:
                 self.move(input_data)
 
 
-WindowManager().analyze("data/dataverse/mixed_0101_gradual.csv")
+window_manager = WindowManager()
+window_manager.analyze("data/dataverse/mixed_0101_gradual.csv")
