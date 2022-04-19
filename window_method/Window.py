@@ -1,18 +1,20 @@
 from typing import List, Tuple, Optional
 
-from config import SEPARATOR, WINDOW_SIZE
-from app.Vector import Vector
+from config import SEPARATOR
+from window_method.Vector import Vector
 
 
 class Window:
-    def __init__(self):
+    def __init__(self, window_size):
         self.data: List[Vector] = []
+        self.window_size = window_size
 
     def load_vector(self, input_vector: Vector) -> Optional[Vector]:
         popping_vector = None
         if self.is_loaded:
             popping_vector = self.data.pop(0)
         self.data.append(input_vector)
+        #print(self.variance)
         return popping_vector
 
     def compare_vector(self, new_vector: Vector) -> float:
@@ -34,9 +36,9 @@ class Window:
 
     @property
     def is_loaded(self) -> bool:
-        assert len(self.data) <= WINDOW_SIZE
+        assert len(self.data) <= self.window_size
 
-        return len(self.data) == WINDOW_SIZE
+        return len(self.data) == self.window_size
 
     @property
     def mean(self) -> dict[str, tuple[float]]:
@@ -63,9 +65,6 @@ class Window:
                     sum_vector[index] += (value - self.mean[class_name][index]) ** 2
             variances[class_name] = tuple(i/len(class_data) for i in sum_vector)
         return variances
-
-    def variance_distance(self, other_window):  # TODO
-        return True
 
     def __repr__(self) -> str:
         return str(self.mean)
