@@ -2,18 +2,22 @@ from typing import Dict
 
 from common.Vector import Vector
 from config import SKIP_FIRST_LINE
-
+from numpy import mean
 
 class EDDM:
-    def __init__(self):
+    def __init__(self, waning_threshold=0.95, error_threshold=0.9):
         self.trained = {}
         self.means: Dict[str, Vector] = {}
-        self.error_indexes = []
+        self.error_distances = []
+        self.waning_threshold = waning_threshold
+        self.error_threshold = error_threshold
+        self.simax = 0
 
     def analyze(self, number_to_train: int, filename: str):
         with open(filename, "r") as reader:
             if SKIP_FIRST_LINE:
                 reader.readline()
+            last_error = number_to_train
             for counter, line in enumerate(reader.readlines()):
                 new_vector = Vector.generate_vector(line)
                 if sum(self.trained.values()) < number_to_train:
@@ -22,9 +26,23 @@ class EDDM:
 
                 predicted_class = self.predict_class(new_vector)
                 if predicted_class != new_vector.cls:
-                    self.error_indexes.append(counter)
-
+                    self.error_distances.append(counter - last_error)
+                    last_error = counter
                 self.train(new_vector)
+
+    @property
+    def error_variance(self):
+        error_mean = mean(self.error_distances)
+
+        maximum = 0
+        for error in self.error_distances:
+            if abs(error - mean) > maximum:
+                maximum = abs(error - mean)
+        return maximum
+
+    @property
+    def pimax(self):
+        return max(self.error_distances)
 
     def train(self, new_vector: Vector):
         if not self.means.get(new_vector.cls):
