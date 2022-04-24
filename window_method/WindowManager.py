@@ -2,7 +2,7 @@
 from math import sqrt
 from typing import List
 from datetime import datetime
-from window_method.Vector import Vector
+from common.Vector import Vector
 from config import SKIP_FIRST_LINE
 from window_method.Window import Window
 
@@ -28,7 +28,7 @@ class WindowManager:
 
         sum = 0
         for cls in {*first_window.classes, *second_window.classes}:
-            for i, j in zip(first_window.mean[cls], second_window.mean[cls]):
+            for i, j in zip(first_window.means[cls], second_window.means[cls]):
                 sum += (i - j) ** 2
         return sqrt(sum)
 

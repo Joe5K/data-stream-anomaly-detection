@@ -1,7 +1,8 @@
-from typing import List, Tuple, Optional
+import math
+from typing import List, Optional
 
-from config import SEPARATOR
-from window_method.Vector import Vector
+from copy import deepcopy
+from common.Vector import Vector
 
 
 class Window:
@@ -15,12 +16,6 @@ class Window:
             popping_vector = self.data.pop(0)
         self.data.append(input_vector)
         return popping_vector
-
-    def compare_vector(self, new_vector: Vector) -> float:
-        variation = 0
-        for i, j in zip(new_vector, self.mean.get(new_vector.cls)):
-            variation += (i - j)**2
-        return variation
 
     @property
     def classes(self) -> List[str]:
@@ -40,7 +35,7 @@ class Window:
         return len(self.data) == self.window_size
 
     @property
-    def mean(self) -> dict[str, tuple[float]]:
+    def means(self) -> dict[str, Vector]:
         means = {}
 
         for class_name, class_data in self.classified_data.items():
@@ -49,21 +44,33 @@ class Window:
             for vector in class_data:
                 for index, value in enumerate(vector):
                     sum_vector[index] += value
-            means[class_name] = tuple(i/len(class_data) for i in sum_vector)
+            means[class_name] = Vector(list(i/len(class_data) for i in sum_vector)+[class_name])
         return means
 
     @property
-    def variance(self) -> dict[str, tuple[float]]:
+    def variances(self) -> dict[str, Vector]:
         variances = {}
+        means = deepcopy(self.means)
 
         for class_name, class_data in self.classified_data.items():
             sum_vector = [0] * len(class_data[0])
 
             for vector in class_data:
                 for index, value in enumerate(vector):
-                    sum_vector[index] += (value - self.mean[class_name][index]) ** 2
-            variances[class_name] = tuple(i/len(class_data) for i in sum_vector)
+                    sum_vector[index] += (value - means[class_name][index]) ** 2
+            variances[class_name] = Vector(list(i/len(class_data) for i in sum_vector)+[class_name])
         return variances
+    
+    @property
+    def standard_deviations(self) -> dict[str, Vector]:
+        deviations = {}
+
+        for class_name, variation_vector in self.variances.items():
+            cached_data = []
+            for data in variation_vector:
+                cached_data.append(str(math.sqrt(data)))
+            deviations[class_name] = Vector(cached_data + [class_name])
+        return deviations
 
     def __repr__(self) -> str:
-        return str(self.mean)
+        return str(self.means)

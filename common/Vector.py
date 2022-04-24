@@ -1,15 +1,16 @@
+import math
 from typing import List
 
-from config import LAST_COL_IS_CLASS, SEPARATOR
+from config import SEPARATOR
 
 
 class Vector:
-    def __init__(self, data: List[str]):
-        if LAST_COL_IS_CLASS:
-            self.data = tuple(float(i) for i in data[:-1])
+    def __init__(self, data: List[str | float], last_column_is_class=True):
+        if last_column_is_class:
+            self.data = list(float(i) for i in data[:-1])
             self.cls = data[-1]
         else:
-            self.data = tuple(float(i) for i in data)
+            self.data = list(float(i) for i in data)
 
     @staticmethod
     def generate_vector(input_line):
@@ -17,12 +18,22 @@ class Vector:
         vector = Vector(data)
         return vector
 
+    def distance(self, other_vector):
+        sum = 0
+        for i, j in zip(self, other_vector):
+            sum += (i - j)**2
+        return math.sqrt(sum)
+
     def __len__(self) -> int:
         return len(self.data)
 
     def __getitem__(self, index) -> float:
         if index < len(self):
             return self.data[index]
+
+    def __setitem__(self, key, value):
+        if key < len(self):
+            self.data[key] = value
 
     def __iter__(self) -> iter:
         return iter(self.data)
