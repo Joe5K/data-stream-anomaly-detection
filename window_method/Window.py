@@ -14,7 +14,6 @@ class Window:
         if self.is_loaded:
             popping_vector = self.data.pop(0)
         self.data.append(input_vector)
-        #print(self.variance)
         return popping_vector
 
     def compare_vector(self, new_vector: Vector) -> float:
