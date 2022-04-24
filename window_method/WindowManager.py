@@ -16,7 +16,6 @@ class WindowManager:
         self.window_size = window_size
         self.drift_threshold = drift_threshold
         self.step = step
-        self.counter = 0
 
     def init_windows(self):
         for i in range(self.windows_number):
@@ -33,17 +32,14 @@ class WindowManager:
                 sum += (i - j) ** 2
         return sqrt(sum)
 
-    def find_drifts(self):
+    def get_difference(self):  # works only with 2 windows
         for count, window in enumerate(self.windows[::-1]):
             index = len(self.windows) - 1 - count
             if index > 0:
                 difference = self.compare_windows_means(index, index - 1)
-                if difference > self.drift_threshold:
-                    return difference
-        return None
+                return difference
 
     def load_line(self, line):
-        self.counter += 1
         new_vector = Vector.generate_vector(line)
 
         if not self.is_initialized:
@@ -62,11 +58,13 @@ class WindowManager:
             if SKIP_FIRST_LINE:
                 input_stream.readline()
             self.init_windows()
-            for line in input_stream.readlines():
+            for counter, line in enumerate(input_stream.readlines()):
                 self.load_line(line)
-                if self.is_initialized and self.counter % self.step == 0 and self.find_drifts():
-                    print(f"Found drift at row {self.counter}, time {datetime.now().strftime('%H:%M:%S.%f')}")
-                    self.clear_data()
+                if self.is_initialized and counter % self.step == 0:
+                    difference = self.get_difference()
+                    if difference > self.drift_threshold:
+                        print(f"Found drift at row {counter}, time {datetime.now().strftime('%H:%M:%S.%f')}")
+                        self.clear_data()
         print("Data stream ended")
 
     def clear_data(self):
