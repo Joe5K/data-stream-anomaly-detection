@@ -2,9 +2,9 @@
 from math import sqrt
 from typing import List
 from datetime import datetime
-from common.Vector import Vector
+from common.vector import Vector
 from config import SKIP_FIRST_LINE
-from window_method.Window import Window
+from window_method.window import Window
 
 import logging
 
@@ -77,4 +77,3 @@ class WindowManager:
             if not window.is_loaded:
                 return False
         return True
-

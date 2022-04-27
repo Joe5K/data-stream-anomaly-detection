@@ -1,11 +1,12 @@
+# -*- coding: utf-8 -*-
 import math
-from typing import List
+from typing import List, Union
 
 from config import SEPARATOR
 
 
 class Vector:
-    def __init__(self, data: List[str | float], last_column_is_class=True):
+    def __init__(self, data: List[Union[str, float]], last_column_is_class=True):
         if last_column_is_class:
             self.data = list(float(i) for i in data[:-1])
             self.cls = data[-1]

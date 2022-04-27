@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 import math
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from copy import deepcopy
-from common.Vector import Vector
+from common.vector import Vector
 
 
 class Window:
@@ -35,7 +36,7 @@ class Window:
         return len(self.data) == self.window_size
 
     @property
-    def means(self) -> dict[str, Vector]:
+    def means(self) -> Dict[str, Vector]:
         means = {}
 
         for class_name, class_data in self.classified_data.items():
@@ -48,7 +49,7 @@ class Window:
         return means
 
     @property
-    def variances(self) -> dict[str, Vector]:
+    def variances(self) -> Dict[str, Vector]:
         variances = {}
         means = deepcopy(self.means)
 
@@ -60,9 +61,9 @@ class Window:
                     sum_vector[index] += (value - means[class_name][index]) ** 2
             variances[class_name] = Vector(list(i/len(class_data) for i in sum_vector)+[class_name])
         return variances
-    
+
     @property
-    def standard_deviations(self) -> dict[str, Vector]:
+    def standard_deviations(self) -> Dict[str, Vector]:
         deviations = {}
 
         for class_name, variation_vector in self.variances.items():
