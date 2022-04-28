@@ -4,7 +4,7 @@ from copy import deepcopy
 from typing import List, Optional, Dict
 
 from common.vector import Vector
-from common.vector_stats import RunningVectorStatistics
+from common.running_stats import RunningVectorStatistics
 
 
 class Window:
@@ -38,44 +38,6 @@ class Window:
         assert len(self.data) <= self.window_size
 
         return len(self.data) == self.window_size
-
-    @property
-    def means(self) -> Dict[str, Vector]:
-        means = {}
-
-        for class_name, class_data in self.classified_data.items():
-            sum_vector = [0] * len(class_data[0])
-
-            for vector in class_data:
-                for index, value in enumerate(vector):
-                    sum_vector[index] += value
-            means[class_name] = Vector(list(i/len(class_data) for i in sum_vector)+[class_name])
-        return means
-
-    @property
-    def variances(self) -> Dict[str, Vector]:
-        variances = {}
-        means = deepcopy(self.means)
-
-        for class_name, class_data in self.classified_data.items():
-            sum_vector = [0] * len(class_data[0])
-
-            for vector in class_data:
-                for index, value in enumerate(vector):
-                    sum_vector[index] += (value - means[class_name][index]) ** 2
-            variances[class_name] = Vector(list(i/len(class_data) for i in sum_vector)+[class_name])
-        return variances
-
-    @property
-    def standard_deviations(self) -> Dict[str, Vector]:
-        deviations = {}
-
-        for class_name, variation_vector in self.variances.items():
-            cached_data = []
-            for data in variation_vector:
-                cached_data.append(str(math.sqrt(data)))
-            deviations[class_name] = Vector(cached_data + [class_name])
-        return deviations
 
     def __repr__(self) -> str:
         return str(self.running_mean)

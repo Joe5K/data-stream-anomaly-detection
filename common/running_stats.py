@@ -1,3 +1,4 @@
+import math
 from copy import deepcopy
 from typing import Dict
 
@@ -16,6 +17,15 @@ class RunningVectorStatistics:
 
         for cls, S in self._variance_counter.items():
             out[cls] = Vector([(num / (self._counter[cls] - 1)) if self._counter[cls] > 1 else 0 for num in S] + [cls])
+
+        return out
+
+    @property
+    def standard_deviation(self) -> Dict[str, Vector]:
+        out = {}
+
+        for cls, variance in self.variance.items():
+            out[cls] = Vector([str(math.sqrt(i)) for i in variance]+[cls])
 
         return out
 

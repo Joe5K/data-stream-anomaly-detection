@@ -12,6 +12,7 @@ class Vector:
             self.cls = data[-1]
         else:
             self.data = list(float(i) for i in data)
+            self.cls = None
 
     @staticmethod
     def generate_vector(input_line):

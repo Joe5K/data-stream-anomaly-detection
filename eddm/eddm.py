@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-from typing import Dict
 
-from common.vector_stats import RunningVectorStatistics
+from common.running_stats import RunningVectorStatistics
 from common.vector import Vector
-from common.stats import RunningStats, Stats
+from eddm.stats import RunningStats, Stats
 from config import SKIP_FIRST_LINE
 
 
