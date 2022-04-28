@@ -26,8 +26,16 @@ class Stats:
     def standard_deviation(self):
         return math.sqrt(self.variance)
 
-    @property
-    def value(self):
+    def __gt__(self, other):
+        return float(self) > float(other)
+
+    def __lt__(self, other):
+        return not self > other
+
+    def __truediv__(self, other):
+        return float(self) / float(other)
+
+    def __float__(self):
         return self.mean + 2*self.standard_deviation
 
     def __repr__(self):

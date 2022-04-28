@@ -12,6 +12,10 @@ class RunningVectorStatistics:
         self._variance_counter: Dict[str, Vector] = {}
 
     @property
+    def count(self):
+        return sum(self._counter.values())
+
+    @property
     def variance(self) -> Dict[str, Vector]:
         out = {}
 
