@@ -38,8 +38,8 @@ class RunningStats(Stats):
     def __init__(self):
         super().__init__()
         self.n = 0
-        self.old_M = self.new_M = 0
-        self.old_S = self.new_S = 0
+        self.M = 0
+        self.S = 0
 
     def reset(self):
         self.__init__()
@@ -48,20 +48,19 @@ class RunningStats(Stats):
         self.n += 1
 
         if self.n == 1:
-            self.old_M = self.new_M = x
-            self.old_S = 0
+            self.M = x
             return
 
-        self.new_M = self.old_M + (x - self.old_M)/self.n
-        self.new_S = self.old_S + (x - self.old_M)*(x - self.new_M)
+        old_m = self.M
+        old_s = self.S
 
-        self.old_M = self.new_M
-        self.old_S = self.new_S
+        self.M = old_m + (x - old_m)/self.n
+        self.S = old_s + (x - old_m)*(x - self.M)
 
     @property
     def mean(self):
-        return self.new_M
+        return self.M
 
     @property
     def variance(self):
-        return self.new_S/(self.n - 1) if self.n > 1 else 0
+        return self.S/(self.n - 1) if self.n > 1 else 0

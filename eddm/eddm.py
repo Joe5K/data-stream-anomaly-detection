@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Dict
 
+from common.vector_stats import RunningVectorStatistics
 from common.vector import Vector
 from common.stats import RunningStats, Stats
 from config import SKIP_FIRST_LINE
@@ -8,8 +9,7 @@ from config import SKIP_FIRST_LINE
 
 class EDDM:
     def __init__(self, warning_threshold=0.95, error_threshold=0.75):
-        self.trained = {}
-        self.means: Dict[str, Vector] = {}
+        self.running_mean = RunningVectorStatistics()
         self.error_distance_stats = RunningStats()
         self.maximum_stats = Stats()
         self.warning_threshold = warning_threshold
@@ -23,7 +23,7 @@ class EDDM:
             for line in reader.readlines():
                 counter += 1
                 new_vector = Vector.generate_vector(line)
-                if sum(self.trained.values()) < number_to_train:
+                if sum(self.running_mean._counter.values()) < number_to_train:
                     self.train(new_vector)
                     last_error = counter
                     continue
@@ -34,7 +34,7 @@ class EDDM:
                     if self.error_distance_stats.value > self.maximum_stats.value:
                         self.maximum_stats.cache_stats(self.error_distance_stats)
 
-                    last_error = counter  # mas tu chybu
+                    last_error = counter
 
                     if self.maximum_stats.value and self.error_distance_stats.value / self.maximum_stats.value < self.warning_threshold:
                         warning_counter += 1
@@ -57,23 +57,16 @@ class EDDM:
     def reset(self):
         self.error_distance_stats.reset()
         self.maximum_stats.reset()
-        self.means.clear()
-        self.trained.clear()
+        self.running_mean.reset()
 
     def train(self, new_vector: Vector):
-        if not self.means.get(new_vector.cls):
-            self.trained[new_vector.cls] = 0
-            self.means[new_vector.cls] = Vector(["0"] * len(new_vector.data) + [new_vector.cls])
-
-        for i in range(len(new_vector.data)):
-            self.means[new_vector.cls][i] = (self.means[new_vector.cls][i]*self.trained[new_vector.cls] + new_vector[i])/(self.trained[new_vector.cls] + 1)
-        self.trained[new_vector.cls] += 1
+        self.running_mean.push(new_vector)
 
     def predict_class(self, new_vector):
         found_class = None
         shortest_distance = float("inf")
 
-        for cls, mean in self.means.items():
+        for cls, mean in self.running_mean.mean.items():
             distance = mean.distance(new_vector)
             if distance < shortest_distance:
                 shortest_distance = distance

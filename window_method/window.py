@@ -1,21 +1,25 @@
 # -*- coding: utf-8 -*-
 import math
+from copy import deepcopy
 from typing import List, Optional, Dict
 
-from copy import deepcopy
 from common.vector import Vector
+from common.vector_stats import RunningVectorStatistics
 
 
 class Window:
     def __init__(self, window_size):
         self.data: List[Vector] = []
         self.window_size = window_size
+        self.running_mean = RunningVectorStatistics()
 
     def load_vector(self, input_vector: Vector) -> Optional[Vector]:
         popping_vector = None
         if self.is_loaded:
             popping_vector = self.data.pop(0)
+            self.running_mean.remove(popping_vector)
         self.data.append(input_vector)
+        self.running_mean.push(input_vector)
         return popping_vector
 
     @property
@@ -74,4 +78,4 @@ class Window:
         return deviations
 
     def __repr__(self) -> str:
-        return str(self.means)
+        return str(self.running_mean)

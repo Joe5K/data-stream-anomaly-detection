@@ -28,7 +28,7 @@ class WindowManager:
 
         sum = 0
         for cls in {*first_window.classes, *second_window.classes}:
-            for i, j in zip(first_window.means[cls], second_window.means[cls]):
+            for i, j in zip(first_window.running_mean[cls], second_window.running_mean[cls]):
                 sum += (i - j) ** 2
         return sqrt(sum)
 
@@ -70,6 +70,7 @@ class WindowManager:
     def clear_data(self):
         for window in self.windows:
             window.data.clear()
+            window.running_mean.reset()
 
     @property
     def is_initialized(self):
