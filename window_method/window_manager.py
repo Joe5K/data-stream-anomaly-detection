@@ -2,6 +2,8 @@
 from math import sqrt
 from typing import List
 from datetime import datetime
+
+from common.common import get_cur_time_str
 from common.vector import Vector
 from config import SKIP_FIRST_LINE
 from window_method.window import Window
@@ -58,12 +60,15 @@ class WindowManager:
             if SKIP_FIRST_LINE:
                 input_stream.readline()
             self.init_windows()
-            for counter, line in enumerate(input_stream.readlines()):
+            counter = 0
+            for line in input_stream.readlines():
+                counter += 1
                 self.load_line(line)
                 if self.is_initialized and counter % self.step == 0:
                     difference = self.get_difference()
-                    if difference > self.drift_threshold:
-                        print(f"Found drift at row {counter}, time {datetime.now().strftime('%H:%M:%S.%f')}")
+                    if difference > self.drift_threshold:  # TODO po detekcii este sledovat ci drift stale nepokracuje
+                        print(f"Drift found after {counter} instances, time {get_cur_time_str()}")
+                        counter = 0
                         self.clear_data()
         print("Data stream ended")
 

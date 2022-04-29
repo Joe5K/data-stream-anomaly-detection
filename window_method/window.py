@@ -22,6 +22,14 @@ class Window:
         self.running_mean.push(input_vector)
         return popping_vector
 
+    def reset(self):
+        self.running_mean.reset()
+        self.data.clear()
+
+    @property
+    def current_data_len(self):
+        return len(self.data)
+
     @property
     def classes(self) -> List[str]:
         return list({i.cls for i in self.data})
@@ -35,9 +43,9 @@ class Window:
 
     @property
     def is_loaded(self) -> bool:
-        assert len(self.data) <= self.window_size
+        assert self.current_data_len <= self.window_size
 
-        return len(self.data) == self.window_size
+        return self.current_data_len == self.window_size
 
     def __repr__(self) -> str:
         return str(self.running_mean)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Tuple
 
+from common.common import get_cur_time_str
 from common.running_stats import RunningVectorStatistics
 from common.vector import Vector
 from eddm.stats import RunningStats, Stats
@@ -52,7 +53,7 @@ class EDDM:
                         error_counter = 0
 
                 if error_counter > 30:
-                    print("Drift found")
+                    print(f"Drift found after {counter} processed instances, time {get_cur_time_str()}")
                     error_counter = warning_counter = counter = last_error = 0
                     self.reset()
                     continue
