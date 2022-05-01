@@ -2,6 +2,8 @@
 from math import sqrt
 from typing import List
 from datetime import datetime
+
+from common.common import get_cur_time_str
 from common.vector import Vector
 from config import SKIP_FIRST_LINE
 from window_method.window import Window
@@ -12,14 +14,14 @@ import logging
 class WindowManager:
     def __init__(self, windows_number: int, window_size: int, drift_threshold: float, step: int):
         self.windows: List[Window] = []
-        self.windows_number = windows_number
-        self.window_size = window_size
         self.drift_threshold = drift_threshold
         self.step = step
 
-    def init_windows(self):
-        for i in range(self.windows_number):
-            window = Window(self.window_size)
+        self.init_windows(windows_number, window_size)
+
+    def init_windows(self, windows_number, window_size):
+        for i in range(windows_number):
+            window = Window(window_size)
             self.windows.append(window)
 
     def compare_windows_means(self, first: int, second: int):
@@ -28,7 +30,7 @@ class WindowManager:
 
         sum = 0
         for cls in {*first_window.classes, *second_window.classes}:
-            for i, j in zip(first_window.means[cls], second_window.means[cls]):
+            for i, j in zip(first_window.running_mean[cls], second_window.running_mean[cls]):
                 sum += (i - j) ** 2
         return sqrt(sum)
 
@@ -53,23 +55,25 @@ class WindowManager:
         logging.info("Removing old data from stream", new_vector)
 
     def analyze(self, filename: str):
-        print(f"Finding drifts by windows method, size of the window is {self.window_size}, the threshold is {self.drift_threshold}")
         with open(filename, "r") as input_stream:
             if SKIP_FIRST_LINE:
                 input_stream.readline()
-            self.init_windows()
-            for counter, line in enumerate(input_stream.readlines()):
+            counter = 0
+            for line in input_stream.readlines():
+                counter += 1
                 self.load_line(line)
                 if self.is_initialized and counter % self.step == 0:
                     difference = self.get_difference()
-                    if difference > self.drift_threshold:
-                        print(f"Found drift at row {counter}, time {datetime.now().strftime('%H:%M:%S.%f')}")
+                    if difference > self.drift_threshold:  # TODO po detekcii este sledovat ci drift stale nepokracuje
+                        print(f"Drift found after {counter} instances, time {get_cur_time_str()}")
+                        counter = 0
                         self.clear_data()
         print("Data stream ended")
 
     def clear_data(self):
         for window in self.windows:
             window.data.clear()
+            window.running_mean.reset()
 
     @property
     def is_initialized(self):
