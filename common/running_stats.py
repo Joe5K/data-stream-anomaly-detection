@@ -34,6 +34,18 @@ class RunningVectorStatistics:
 
         return out
 
+    def is_vector_anomalous(self, vector: Vector, epsilon: float):
+        mean = self.mean[vector.cls]
+        variance = self.variance[vector.cls]
+
+        product = 1
+        for x, u, o2 in zip(vector, mean, variance):
+            if o2 == 0:
+                continue
+            product *= (1 / (math.sqrt(2 * math.pi) * math.sqrt(o2))) * math.exp(-((x - u) ** 2) / (2 * o2))
+
+        return product < epsilon
+
     def reset(self):
         self.__init__()
 
@@ -59,7 +71,7 @@ class RunningVectorStatistics:
 
         for i in range(len(old_vector)):
             self.mean[old_vector.cls][i] = old_mean[i] - (old_vector[i] - old_mean[i]) / self._counter[old_vector.cls]
-            self._variance_counter[old_vector.cls][i] = old_s[i] - (old_vector[i] - old_mean[i]) * (old_vector[i] - self.mean[old_vector.cls][i])
+            self._variance_counter[old_vector.cls][i] = abs(old_s[i] - (old_vector[i] - old_mean[i]) * (old_vector[i] - self.mean[old_vector.cls][i]))
 
     def __repr__(self):
         return str(self.mean)

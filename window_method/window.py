@@ -11,19 +11,19 @@ class Window:
     def __init__(self, window_size):
         self.data: List[Vector] = []
         self.window_size = window_size
-        self.running_mean = RunningVectorStatistics()
+        self.running_stats = RunningVectorStatistics()
 
     def load_vector(self, input_vector: Vector) -> Optional[Vector]:
         popping_vector = None
         if self.is_loaded:
             popping_vector = self.data.pop(0)
-            self.running_mean.remove(popping_vector)
+            self.running_stats.remove(popping_vector)
         self.data.append(input_vector)
-        self.running_mean.push(input_vector)
+        self.running_stats.push(input_vector)
         return popping_vector
 
     def reset(self):
-        self.running_mean.reset()
+        self.running_stats.reset()
         self.data.clear()
 
     @property
@@ -48,4 +48,4 @@ class Window:
         return self.current_data_len == self.window_size
 
     def __repr__(self) -> str:
-        return str(self.running_mean)
+        return str(self.running_stats)
