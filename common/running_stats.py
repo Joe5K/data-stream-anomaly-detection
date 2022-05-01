@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import math
 from copy import deepcopy
 from typing import Dict
@@ -20,7 +21,7 @@ class RunningVectorStatistics:
         out = {}
 
         for cls, S in self._variance_counter.items():
-            out[cls] = Vector([(num / (self._counter[cls] - 1)) if self._counter[cls] > 1 else 0 for num in S] + [cls])
+            out[cls] = Vector([(num / (self._counter[cls] - 1)) if self._counter[cls] > 1 else 0 for num in S])
 
         return out
 
@@ -29,7 +30,7 @@ class RunningVectorStatistics:
         out = {}
 
         for cls, variance in self.variance.items():
-            out[cls] = Vector([str(math.sqrt(i)) for i in variance]+[cls])
+            out[cls] = Vector([str(math.sqrt(i)) for i in variance])
 
         return out
 
@@ -39,7 +40,7 @@ class RunningVectorStatistics:
     def push(self, new_vector: Vector) -> None:
         if not self.mean.get(new_vector.cls):
             self.mean[new_vector.cls] = deepcopy(new_vector)
-            self._variance_counter[new_vector.cls] = Vector([0] * len(new_vector) + [new_vector.cls])
+            self._variance_counter[new_vector.cls] = Vector([0] * len(new_vector))
             self._counter[new_vector.cls] = 1
             return
 

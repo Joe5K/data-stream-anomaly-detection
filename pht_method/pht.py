@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from common.common import get_cur_time_str
 from common.vector import Vector
 from config import SKIP_FIRST_LINE
@@ -9,7 +10,7 @@ class PageHinkley:
         self.window = Window(window_size)
         self.threshold = threshold
 
-    def analyze(self, number_to_train: int, filename:str):
+    def analyze(self, number_to_train: int, filename: str):
         counter = error_counter = 0
         with open(filename, "r") as reader:
             if SKIP_FIRST_LINE:
@@ -30,5 +31,3 @@ class PageHinkley:
                     print(f"Drift occured after {counter} processed instances, time {get_cur_time_str()}")
                     counter = error_counter = 0
                     self.window.reset()
-
-
