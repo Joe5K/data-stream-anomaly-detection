@@ -24,22 +24,15 @@ class WindowManager:
             window = Window(window_size)
             self.windows.append(window)
 
-    def compare_windows_means(self, first: int, second: int):
-        first_window = self.windows[first]
-        second_window = self.windows[second]
+    def compare_windows_means(self, first_index: int, second_index: int):
+        first_window = self.windows[first_index]
+        second_window = self.windows[second_index]
 
         sum = 0
         for cls in {*first_window.classes, *second_window.classes}:
             for i, j in zip(first_window.running_stats[cls], second_window.running_stats[cls]):
                 sum += (i - j) ** 2
         return sqrt(sum)
-
-    def get_difference(self):  # works only with 2 windows
-        for count, window in enumerate(self.windows[::-1]):
-            index = len(self.windows) - 1 - count
-            if index > 0:
-                difference = self.compare_windows_means(index, index - 1)
-                return difference
 
     def load_line(self, line):
         new_vector = Vector.generate_vector(line)
@@ -63,7 +56,7 @@ class WindowManager:
                 counter += 1
                 self.load_line(line)
                 if self.is_initialized and counter % self.step == 0:
-                    difference = self.get_difference()
+                    difference = self.compare_windows_means(first_index=0, second_index=1)
                     if difference > self.drift_threshold:  # TODO po detekcii este sledovat ci drift stale nepokracuje
                         print(f"Drift found after {counter} instances, time {get_cur_time_str()}")
                         counter = 0

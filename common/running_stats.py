@@ -34,7 +34,7 @@ class RunningVectorStatistics:
 
         return out
 
-    def is_vector_anomalous(self, vector: Vector, epsilon: float):
+    '''def is_vector_anomalous(self, vector: Vector, epsilon: float):
         mean = self.mean[vector.cls]
         variance = self.variance[vector.cls]
 
@@ -44,34 +44,34 @@ class RunningVectorStatistics:
                 continue
             product *= (1 / (math.sqrt(2 * math.pi) * math.sqrt(o2))) * math.exp(-((x - u) ** 2) / (2 * o2))
 
-        return product < epsilon
+        return product < epsilon'''
 
     def reset(self):
         self.__init__()
 
-    def push(self, new_vector: Vector) -> None:
-        if not self.mean.get(new_vector.cls):
-            self.mean[new_vector.cls] = deepcopy(new_vector)
-            self._variance_counter[new_vector.cls] = Vector([0] * len(new_vector))
-            self._counter[new_vector.cls] = 1
+    def push(self, vector: Vector) -> None:
+        if not self.mean.get(vector.cls):
+            self.mean[vector.cls] = deepcopy(vector)
+            self._variance_counter[vector.cls] = Vector([0] * len(vector))
+            self._counter[vector.cls] = 1
             return
 
-        self._counter[new_vector.cls] += 1
-        old_mean = self.mean[new_vector.cls]
-        old_s = self._variance_counter[new_vector.cls]
+        self._counter[vector.cls] += 1
+        old_mean = self.mean[vector.cls]
+        old_s = self._variance_counter[vector.cls]
 
-        for i in range(len(new_vector)):
-            self.mean[new_vector.cls][i] = old_mean[i] + (new_vector[i] - old_mean[i]) / self._counter[new_vector.cls]
-            self._variance_counter[new_vector.cls][i] = old_s[i] + (new_vector[i] - old_mean[i]) * (new_vector[i] - self.mean[new_vector.cls][i])
+        for i in range(len(vector)):
+            self.mean[vector.cls][i] = old_mean[i] + (vector[i] - old_mean[i]) / self._counter[vector.cls]
+            self._variance_counter[vector.cls][i] = old_s[i] + (vector[i] - old_mean[i]) * (vector[i] - self.mean[vector.cls][i])
 
-    def remove(self, old_vector: Vector) -> None:
-        old_mean = self.mean[old_vector.cls]
-        old_s = self._variance_counter[old_vector.cls]
-        self._counter[old_vector.cls] -= 1
+    def remove(self, vector: Vector) -> None:
+        old_mean = self.mean[vector.cls]
+        old_s = self._variance_counter[vector.cls]
+        self._counter[vector.cls] -= 1
 
-        for i in range(len(old_vector)):
-            self.mean[old_vector.cls][i] = old_mean[i] - (old_vector[i] - old_mean[i]) / self._counter[old_vector.cls]
-            self._variance_counter[old_vector.cls][i] = abs(old_s[i] - (old_vector[i] - old_mean[i]) * (old_vector[i] - self.mean[old_vector.cls][i]))
+        for i in range(len(vector)):
+            self.mean[vector.cls][i] = old_mean[i] - (vector[i] - old_mean[i]) / self._counter[vector.cls]
+            self._variance_counter[vector.cls][i] = max(0., old_s[i] - (vector[i] - old_mean[i]) * (vector[i] - self.mean[vector.cls][i]))
 
     def __repr__(self):
         return str(self.mean)

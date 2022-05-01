@@ -2,7 +2,7 @@
 import math
 
 
-class Stats:
+class EDDMStats:  # TODO refactor
     def __init__(self):
         self._cached_mean = 0
         self._cached_variance = 0
@@ -42,7 +42,7 @@ class Stats:
         return f"Mean:{self.mean}, standard deviation: {self.standard_deviation}"
 
 
-class RunningStats(Stats):
+class RunningEDDMStats(EDDMStats):
     def __init__(self):
         super().__init__()
         self.n = 0

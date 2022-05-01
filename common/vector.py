@@ -8,8 +8,7 @@ from config import SEPARATOR
 class Vector:
     def __init__(self, data: Iterable[Union[str, float]], cls: Optional[str] = None):
         self.data = list(float(i) for i in data)
-        if cls:
-            self.cls = cls
+        self.cls = cls
 
     @staticmethod
     def generate_vector(input_line):
@@ -38,6 +37,6 @@ class Vector:
         return iter(self.data)
 
     def __repr__(self) -> str:
-        if hasattr(self, "cls"):
+        if self.cls:
             return f"class: {self.cls}; data: {str(self.data)}"
         return f"data: {str(self.data)}"

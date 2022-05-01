@@ -4,77 +4,66 @@ from typing import Tuple
 from common.common import get_cur_time_str
 from common.running_stats import RunningVectorStatistics
 from common.vector import Vector
-from eddm.stats import RunningStats, Stats
+from eddm.eddmstats import RunningEDDMStats, EDDMStats
 from config import SKIP_FIRST_LINE
 
 
 class EDDMData:
     def __init__(self):
         self.running_mean = RunningVectorStatistics()
-        self.error_distance_stats = RunningStats()
-        self.maximum_stats = Stats()
+        self.misprediction_distance_stats = RunningEDDMStats()
+        self.maximum_misprediction_distance = EDDMStats()
 
 
 class EDDM:
-    def __init__(self, warning_threshold=0.95, error_threshold=0.75):
+    def __init__(self, train_instances=100, error_threshold=0.75):
         self.data = EDDMData()
-        # self.temporary_data = EDDMData()  # TODO keep warning data here
-        self.warning_threshold = warning_threshold
+        self.train_instances = train_instances
         self.error_threshold = error_threshold
 
-    def analyze(self, number_to_train: int, filename: str):
+    def analyze(self, filename: str):
         with open(filename, "r") as reader:
             if SKIP_FIRST_LINE:
                 reader.readline()
-            error_counter = warning_counter = counter = 0
+            error_counter = counter = 0
             for line in reader.readlines():
                 counter += 1
                 new_vector = Vector.generate_vector(line)
-                if self.data.running_mean.count < number_to_train:
+                if self.data.running_mean.count < self.train_instances:
                     self.train(new_vector)
                     last_error = counter
                     continue
 
                 predicted_class = self.predict_class(new_vector)
                 if predicted_class != new_vector.cls:
-                    self.process_error(number_of_processed_without_error=counter-last_error)
+                    self.process_misprediction(number_of_processed_without_error=counter - last_error)
                     last_error = counter
 
-                    warning, error = self.get_warning_and_error()
-
-                    if warning:
-                        warning_counter += 1
-                    else:
-                        warning_counter = 0
-
-                    if error:
-                        error_counter += 1
-                    else:
-                        error_counter = 0
+                    error_counter = error_counter + 1 if self.is_error() else 0
 
                 if error_counter > 30:
                     print(f"Drift found after {counter} processed instances, time {get_cur_time_str()}")
-                    error_counter = warning_counter = counter = last_error = 0
+                    error_counter = counter = last_error = 0
                     self.reset()
                     continue
 
                 self.train(new_vector)
 
-    def process_error(self, number_of_processed_without_error):
-        self.data.error_distance_stats.push(number_of_processed_without_error)
+    def process_misprediction(self, number_of_processed_without_error):
+        self.data.misprediction_distance_stats.push(number_of_processed_without_error)
 
-        if self.data.error_distance_stats > self.data.maximum_stats:
-            self.data.maximum_stats.cache_stats(self.data.error_distance_stats)
+        if self.data.misprediction_distance_stats > self.data.maximum_misprediction_distance:
+            self.data.maximum_misprediction_distance.cache_stats(self.data.misprediction_distance_stats)
 
-    def get_warning_and_error(self) -> Tuple[bool, bool]:
-        if not self.data.maximum_stats:
-            return False, False
-        result = self.data.error_distance_stats / self.data.maximum_stats
-        return result < self.warning_threshold, result < self.error_threshold
+    def is_error(self) -> bool:
+        if not self.data.maximum_misprediction_distance:
+            return False
+        result = self.data.misprediction_distance_stats / self.data.maximum_misprediction_distance
+        return result < self.error_threshold
 
     def reset(self):
-        self.data.error_distance_stats.reset()
-        self.data.maximum_stats.reset()
+        self.data.misprediction_distance_stats.reset()
+        self.data.maximum_misprediction_distance.reset()
         self.data.running_mean.reset()
 
     def train(self, new_vector: Vector):

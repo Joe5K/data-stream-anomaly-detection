@@ -2,34 +2,36 @@
 import math
 
 from common.common import get_cur_time_str
+from common.running_stats import RunningVectorStatistics
 from common.vector import Vector
 from config import SKIP_FIRST_LINE
+from pht_method.weighted_stats import WeightedStats
 from window_method.window import Window
 
 
 class PageHinkley:
-    def __init__(self, window_size: int, threshold=0.8):
-        self.static_window = Window(window_size)
-        self.dynamic_window = Window(window_size)
+    def __init__(self, train_instances=100, threshold=50, alpha=0.99, delta=0.005):
+        self.stats = WeightedStats(alpha, delta)
+        self.train_instances = train_instances
         self.threshold = threshold
 
     def analyze(self, filename: str):
-        counter = error_counter = 0
+        counter = 0
         with open(filename, "r") as reader:
             if SKIP_FIRST_LINE:
                 reader.readline()
             for line in reader.readlines():
                 counter += 1
                 new_vector = Vector.generate_vector(line)
-                if not self.static_window.is_loaded:
-                    self.static_window.load_vector(new_vector)
-                    self.dynamic_window.load_vector(new_vector)
+                self.stats.push(new_vector)
+                if self.stats.count < self.train_instances:
                     continue
 
-                self.dynamic_window.load_vector(new_vector)
+                for distance_vector in self.stats.weighted_deviation.values():
+                    if any(value > self.threshold for value in distance_vector):
+                        print(f"Drift occured after {counter} processed instances, time {get_cur_time_str()}")
+                        counter = 0
+                        self.reset()
 
-                if self.static_window.running_stats.mean[new_vector.cls].distance(self.dynamic_window.running_stats.mean[new_vector.cls]) > self.threshold:
-                    print(f"Drift occured after {counter} processed instances, time {get_cur_time_str()}")
-                    counter = 0
-                    self.static_window.reset()
-                    self.dynamic_window.reset()
+    def reset(self):
+        self.stats.reset()
