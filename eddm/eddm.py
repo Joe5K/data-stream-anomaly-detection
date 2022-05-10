@@ -39,15 +39,10 @@ class EDDM:
                         error_counter = error_counter + 1
 
                 if error_counter > 30:
-                    if counter < self.train_instances*10:
-                        print(f"Continuous drift, relearning model again")
-                    else:
-                        print(f"Drift found after {counter} processed instances, time {get_cur_time_str()}")
+                    print(f"Drift found after {counter} processed instances, time {get_cur_time_str()}")
                     error_counter = counter = last_error = 0
                     self.reset()
                     continue
-
-                self.train(new_vector)
 
     def process_misprediction(self, number_of_processed_without_error):
         self.misprediction_distance_stats.push(number_of_processed_without_error)
