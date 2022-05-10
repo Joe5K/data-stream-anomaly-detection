@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import math
 from copy import deepcopy
-from typing import Dict
+from typing import Dict, List
 
 from common.vector import Vector
 
@@ -15,6 +15,9 @@ class RunningVectorStatistics:
     @property
     def count(self):
         return sum(self._counter.values())
+
+    def get_cls_count(self, cls: str):
+        return self._counter[cls]
 
     @property
     def variance(self) -> Dict[str, Vector]:
@@ -33,6 +36,10 @@ class RunningVectorStatistics:
             out[cls] = Vector([str(math.sqrt(i)) for i in variance])
 
         return out
+
+    @property
+    def classes(self) -> List[str]:
+        return list(self.mean.keys())
 
     '''def is_vector_anomalous(self, vector: Vector, epsilon: float):
         mean = self.mean[vector.cls]

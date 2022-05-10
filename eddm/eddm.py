@@ -2,6 +2,7 @@
 from typing import Tuple
 
 from common.common import get_cur_time_str
+from common.naive_bayers import naive_bayers_distance
 from common.running_stats import RunningVectorStatistics
 from common.vector import Vector
 from eddm.eddmstats import RunningEDDMStats, EDDMStats
@@ -39,10 +40,14 @@ class EDDM:
                     self.process_misprediction(number_of_processed_without_error=counter - last_error)
                     last_error = counter
 
-                    error_counter = error_counter + 1 if self.is_error() else 0
+                    if self.is_error():
+                        error_counter = error_counter + 1
 
                 if error_counter > 30:
-                    print(f"Drift found after {counter} processed instances, time {get_cur_time_str()}")
+                    if counter < self.train_instances*10:
+                        print(f"Continuous drift, relearning model again")
+                    else:
+                        print(f"Drift found after {counter} processed instances, time {get_cur_time_str()}")
                     error_counter = counter = last_error = 0
                     self.reset()
                     continue
@@ -71,12 +76,15 @@ class EDDM:
 
     def predict_class(self, new_vector):
         found_class = None
-        shortest_distance = float("inf")
+        highest_probability = 0
 
-        for cls, mean in self.data.running_mean.mean.items():
-            distance = mean.distance(new_vector)
-            if distance < shortest_distance:
-                shortest_distance = distance
+        for cls in self.data.running_mean.classes:
+            mean = self.data.running_mean.mean[cls]
+            variance = self.data.running_mean.variance[cls]
+            cls_count_division = self.data.running_mean.get_cls_count(cls)/self.data.running_mean.count
+            probability = naive_bayers_distance(new_vector, mean, variance, cls_count_division)
+            if probability > highest_probability:
+                highest_probability = probability
                 found_class = cls
 
         return found_class
