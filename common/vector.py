@@ -25,9 +25,9 @@ class Vector:
     def __len__(self) -> int:
         return len(self.data)
 
-    def __getitem__(self, index) -> float:
-        if index < len(self):
-            return self.data[index]
+    def __getitem__(self, key) -> float:
+        if key < len(self):
+            return self.data[key]
 
     def __setitem__(self, key, value):
         if key < len(self):

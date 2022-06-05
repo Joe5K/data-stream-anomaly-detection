@@ -23,5 +23,5 @@ class WeightedStats(RunningVectorStatistics):
         for i in range(len(vector)):
             self.weighted_deviation[vector.cls][i] = (
                     self.alpha * self.weighted_deviation[vector.cls][i]
-                    + abs(vector[i] - self.mean[vector.cls][i] - self.delta)
+                    + abs(abs(vector[i] - self.mean[vector.cls][i]) - self.delta)
             )

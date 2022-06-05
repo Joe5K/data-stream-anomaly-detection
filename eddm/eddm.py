@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Tuple
+from typing import Tuple, List
 
 from common.common import get_cur_time_str
 from common.naive_bayers import naive_bayers_distance
@@ -17,32 +17,32 @@ class EDDM:
         self.train_instances = train_instances
         self.error_threshold = error_threshold
 
-    def analyze(self, filename: str):
-        with open(filename, "r") as reader:
-            if SKIP_FIRST_LINE:
-                reader.readline()
-            error_counter = counter = 0
-            for line in reader.readlines():
-                counter += 1
-                new_vector = Vector.generate_vector(line)
-                if self.running_mean.count < self.train_instances:
-                    self.train(new_vector)
-                    last_error = counter
-                    continue
+    def analyze(self, data: List[Vector]):
+        error_counter = counter = total = 0
+        for new_vector in data:
+            counter += 1
+            total += 1
+            if self.running_mean.count < self.train_instances:
+                self.train(new_vector)
+                last_error = counter
+                continue
 
-                predicted_class = self.predict_class(new_vector)
-                if predicted_class != new_vector.cls:
-                    self.process_misprediction(number_of_processed_without_error=counter - last_error)
-                    last_error = counter
+            predicted_class = self.predict_class(new_vector)
+            if predicted_class != new_vector.cls:
+                distance = counter - last_error
+                self.process_misprediction(number_of_processed_without_error=distance)
+                last_error = counter
 
-                    if self.is_error():
-                        error_counter = error_counter + 1
+                if self.is_error():
+                    error_counter = error_counter + 1
 
-                if error_counter > 30:
-                    print(f"Drift found after {counter} processed instances, time {get_cur_time_str()}")
-                    error_counter = counter = last_error = 0
-                    self.reset()
-                    continue
+            if error_counter > 0:
+                if counter > self.train_instances*2:
+                    print(f"Drift found after {counter} processed instances, total {total}, time {get_cur_time_str()}")
+                    break
+                error_counter = counter = last_error = 0
+                self.reset()
+                continue
 
     def process_misprediction(self, number_of_processed_without_error):
         self.misprediction_distance_stats.push(number_of_processed_without_error)

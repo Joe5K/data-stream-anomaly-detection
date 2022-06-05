@@ -34,9 +34,7 @@ class WindowManager:
                 sum += (i - j) ** 2
         return sqrt(sum)
 
-    def load_line(self, line):
-        new_vector = Vector.generate_vector(line)
-
+    def load_vector(self, new_vector: Vector):
         if not self.is_initialized:
             for window in self.windows:
                 if not window.is_loaded:
@@ -47,20 +45,18 @@ class WindowManager:
             new_vector = window.load_vector(new_vector)
         logging.info("Removing old data from stream", new_vector)
 
-    def analyze(self, filename: str):
-        with open(filename, "r") as input_stream:
-            if SKIP_FIRST_LINE:
-                input_stream.readline()
-            counter = 0
-            for line in input_stream.readlines():
-                counter += 1
-                self.load_line(line)
-                if self.is_initialized and counter % self.step == 0:
-                    difference = self.compare_windows_means(first_index=0, second_index=1)
-                    if difference > self.drift_threshold:  # TODO po detekcii este sledovat ci drift stale nepokracuje
-                        print(f"Drift found after {counter} instances, time {get_cur_time_str()}")
-                        counter = 0
-                        self.clear_data()
+    def analyze(self, data: List[Vector]):
+        counter = 0
+        for vector in data:
+            counter += 1
+            self.load_vector(vector)
+            if self.is_initialized and counter % self.step == 0:
+                difference = self.compare_windows_means(first_index=0, second_index=1)
+                if difference > self.drift_threshold:
+                    print(f"Drift found after {counter} instances, time {get_cur_time_str()}")
+                    break
+                    counter = 0
+                    self.clear_data()
         print("Data stream ended")
 
     def clear_data(self):

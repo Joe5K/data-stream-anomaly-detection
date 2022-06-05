@@ -38,6 +38,9 @@ class EDDMStats:  # TODO refactor
     def __float__(self):
         return self.mean + 2*self.standard_deviation
 
+    def __bool__(self):
+        return bool(float(self))
+
     def __repr__(self):
         return f"Mean:{self.mean}, standard deviation: {self.standard_deviation}"
 

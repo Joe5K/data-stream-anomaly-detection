@@ -1,20 +1,25 @@
 # -*- coding: utf-8 -*-
+from common.stream import DriftStream
 from eddm.eddm import EDDM
 from pht_method.pht import PageHinkley
 from window_method.window_manager import WindowManager
 
-'''print("Page-Hinkley Test")
-pht = PageHinkley(train_instances=100, threshold=35)
-pht.analyze(filename="data/dataverse/sine_3210_gradual.csv")
-print("_________________________________")'''
+drift_stream = DriftStream(drift_position=40000, drift_width=2000)
+data = drift_stream.data()
+
+print("Page-Hinkley Test")
+pht = PageHinkley(train_instances=2000, threshold=600, alpha=0.99, delta=0.45)
+pht.analyze(data=data)
+print("_________________________________")
 
 print("Early Drift Detection Method")
-eddm = EDDM(train_instances=100, error_threshold=0.7)
-eddm.analyze(filename="data/dataverse/sine_3210_gradual.csv")
+eddm = EDDM(train_instances=2000, error_threshold=0.65)
+eddm.analyze(data=data)
 print("_________________________________")
 
-'''print("My own window method :)")
-window_manager = WindowManager(windows_number=2, window_size=500, drift_threshold=0.2, step=10)
-window_manager.analyze(filename="data/dataverse/sine_3210_gradual.csv")
+print("My own window method :)")
+window_manager = WindowManager(windows_number=2, window_size=2000, drift_threshold=0.6, step=10)
+window_manager.analyze(data=data)
 print("_________________________________")
-'''
+
+

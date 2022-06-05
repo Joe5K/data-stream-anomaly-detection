@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
+from typing import List
 
 from common.common import get_cur_time_str
 from common.running_stats import RunningVectorStatistics
@@ -15,23 +16,19 @@ class PageHinkley:
         self.train_instances = train_instances
         self.threshold = threshold
 
-    def analyze(self, filename: str):
+    def analyze(self, data: List[Vector]):
         counter = 0
-        with open(filename, "r") as reader:
-            if SKIP_FIRST_LINE:
-                reader.readline()
-            for line in reader.readlines():
-                counter += 1
-                new_vector = Vector.generate_vector(line)
-                self.stats.push(new_vector)
-                if self.stats.count < self.train_instances:
-                    continue
+        for vector in data:
+            counter += 1
+            self.stats.push(vector)
+            if self.stats.count < self.train_instances:
+                continue
 
-                for distance_vector in self.stats.weighted_deviation.values():
-                    if any(value > self.threshold for value in distance_vector):
-                        print(f"Drift occured after {counter} processed instances, time {get_cur_time_str()}")
-                        counter = 0
-                        self.reset()
+            for distance_vector in self.stats.weighted_deviation.values():
+                if sum(distance_vector) > self.threshold:
+                    print(f"Drift occured after {counter} processed instances, time {get_cur_time_str()}")
+                    return
+                    counter = 0
 
     def reset(self):
         self.stats.reset()
