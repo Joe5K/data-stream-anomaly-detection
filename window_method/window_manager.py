@@ -43,9 +43,11 @@ class WindowManager:
 
         for count, window in enumerate(self.windows[::-1]):
             new_vector = window.load_vector(new_vector)
+            break
         logging.info("Removing old data from stream", new_vector)
 
     def analyze(self, data: List[Vector]):
+        start = datetime.now()
         counter = 0
         for vector in data:
             counter += 1
@@ -53,11 +55,11 @@ class WindowManager:
             if self.is_initialized and counter % self.step == 0:
                 difference = self.compare_windows_means(first_index=0, second_index=1)
                 if difference > self.drift_threshold:
-                    print(f"Drift found after {counter} instances, time {get_cur_time_str()}")
-                    break
+                    if counter > self.windows[0].window_size*2:
+                        print(f"Drift found after {counter} instances, took {(datetime.now()-start).total_seconds()} seconds")
                     counter = 0
                     self.clear_data()
-        print("Data stream ended")
+        print(f"Processing of stream took {(datetime.now()-start).total_seconds()} seconds")
 
     def clear_data(self):
         for window in self.windows:
