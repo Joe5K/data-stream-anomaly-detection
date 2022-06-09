@@ -8,9 +8,9 @@ from pht_method.pht import PageHinkley
 from window_method.window_manager import WindowManager
 from random import randint
 
-parameters = [(50000, 5000)]
+parameters = []
 
-while len(parameters) < 15 and False:
+while len(parameters) < 15:
     position = randint(10000, 1000000)
     width = randint(200, 200000)
     if position - width - 10000 < 0:
