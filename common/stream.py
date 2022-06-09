@@ -17,40 +17,9 @@ class DriftStream:
             width=self.drift_width
         ).next_sample(batch_size=self.drift_position*2)
 
-        stats = RunningVectorStatistics()
-        stats2 = RunningVectorStatistics()
         data = []
         for index, (vector_data, cls) in enumerate(zip(*sample)):
-
-            vector = Vector(data=vector_data.tolist(), cls=str(cls.tolist()))
-            data.append(vector)
-
-            '''if index == self.drift_position - self.drift_width:
-                print("Before drift")
-                print(f"Stats 1 mean: {str(stats.mean)}")
-                print(f"Stats 1 var: {str(stats.variance)}")
-                print(f"Stats 2 mean: {str(stats2.mean)}")
-                print(f"Stats 2 var: {str(stats2.variance)}")
-                stats2.reset()
-            
-            if index == self.drift_position + self.drift_width:
-                print("After drift")
-                print(f"Stats 1 mean: {str(stats.mean)}")
-                print(f"Stats 1 var: {str(stats.variance)}")
-                print(f"Stats 2 mean: {str(stats2.mean)}")
-                print(f"Stats 2 var: {str(stats2.variance)}")
-                stats2.reset()
-            
-            if index == self.drift_position*2-1:
-                print("End drift")
-                print(f"Stats 1 mean: {str(stats.mean)}")
-                print(f"Stats 1 var: {str(stats.variance)}")
-                print(f"Stats 2 mean: {str(stats2.mean)}")
-                print(f"Stats 2 var: {str(stats2.variance)}")
-                stats2.reset()
-
-            stats.push(vector)
-            stats2.push(vector)'''
+            data.append(Vector(data=vector_data.tolist(), cls=cls.tolist()))
 
         return data
 

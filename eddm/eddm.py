@@ -39,12 +39,12 @@ class EDDM:
 
             if error_counter > 0:
                 if counter > self.train_instances*2:
-                    print(f"Drift found after {counter} processed instances, took {(datetime.now()-start).total_seconds()} seconds")
+                    #print(f"Drift found after {counter} processed instances, took {(datetime.now()-start).total_seconds()} seconds")
                     return counter
                 error_counter = counter = last_error = 0
                 self.reset()
                 continue
-        print(f"Processing of stream took {(datetime.now() - start).total_seconds()} seconds")
+        #print(f"Processing of stream took {(datetime.now() - start).total_seconds()} seconds")
 
     def process_misprediction(self, number_of_processed_without_error):
         self.misprediction_distance_stats.push(number_of_processed_without_error)

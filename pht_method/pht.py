@@ -23,17 +23,19 @@ class PageHinkley:
         for vector in data:
             counter += 1
             if self.stats.count < self.train_instances:
-                self.stats.push(vector, count=False)
+                self.stats.push(vector)
                 continue
 
             self.stats.push(vector)
 
             for distance_vector in self.stats.weighted_deviation.values():
                 if abs(sum(distance_vector)) > self.threshold:
-                    print(f"Drift occured after {counter} processed instances, took {(datetime.now()-start).total_seconds()} seconds")
+                    #print(f"Drift occured after {counter} processed instances, took {(datetime.now()-start).total_seconds()} seconds")
+                    return counter
                     counter = 0
                     self.reset()
-        print(f"Processing of stream took {(datetime.now() - start).total_seconds()} seconds")
+
+        #print(f"Processing of stream took {(datetime.now() - start).total_seconds()} seconds")
 
     def reset(self):
         self.stats.reset()

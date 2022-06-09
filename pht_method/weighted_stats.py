@@ -22,8 +22,12 @@ class WeightedStats(RunningVectorStatistics):
             self.weighted_deviation[vector.cls] = Vector([0] * len(vector))
             return
 
+        standard_deviation = self.standard_deviation[vector.cls]
         for i in range(len(vector)):
             self.weighted_deviation[vector.cls][i] = (
                     self.alpha * self.weighted_deviation[vector.cls][i] + (
-                        vector[i] - self.mean[vector.cls][i] - self.standard_deviation[vector.cls][i] / 2)
+                        vector[i] - self.mean[vector.cls][i] - standard_deviation[i] / 2)
             )
+
+    def __repr__(self):
+        return str(self.weighted_deviation)

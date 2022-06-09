@@ -6,9 +6,9 @@ from config import SEPARATOR
 
 
 class Vector:
-    def __init__(self, data: Iterable[Union[str, float]], cls: Optional[str] = None):
+    def __init__(self, data: Iterable[Union[str, float]], cls: Optional[Union[str, int, float]] = None):
         self.data = list(float(i) for i in data)
-        self.cls = cls
+        self.cls = str(cls)
 
     @staticmethod
     def generate_vector(input_line):

@@ -14,7 +14,7 @@ import logging
 class WindowManager:
     def __init__(self, windows_number: int, window_size: int, drift_threshold: float, step: int):
         self.windows: List[Window] = []
-        self.drift_threshold = drift_threshold
+        self.drift_threshold = drift_threshold**2
         self.step = step
 
         self.init_windows(windows_number, window_size)
@@ -32,7 +32,7 @@ class WindowManager:
         for cls in {*first_window.classes, *second_window.classes}:
             for i, j in zip(first_window.running_stats[cls], second_window.running_stats[cls]):
                 sum += (i - j) ** 2
-        return sqrt(sum)
+        return sum
 
     def load_vector(self, new_vector: Vector):
         if not self.is_initialized:
@@ -56,10 +56,11 @@ class WindowManager:
                 difference = self.compare_windows_means(first_index=0, second_index=1)
                 if difference > self.drift_threshold:
                     if counter > self.windows[0].window_size*2:
+                        return counter
                         print(f"Drift found after {counter} instances, took {(datetime.now()-start).total_seconds()} seconds")
                     counter = 0
                     self.clear_data()
-        print(f"Processing of stream took {(datetime.now()-start).total_seconds()} seconds")
+        #print(f"Processing of stream took {(datetime.now()-start).total_seconds()} seconds")
 
     def clear_data(self):
         for window in self.windows:
