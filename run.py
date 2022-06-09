@@ -1,100 +1,56 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
+from datetime import datetime
 
 from common.stream import DriftStream
 from eddm.eddm import EDDM
 from pht_method.pht import PageHinkley
 from window_method.window_manager import WindowManager
+from random import randint
 
-'''for drift_width in [2000, 5000, 8000, 13000]:
-    drift_position = 50000
-    drift_start = drift_position - drift_width/2
-    drift_end = drift_start + drift_width
-    drift_stream = DriftStream(drift_position, drift_width)
+parameters = [(50000, 5000)]
 
-    for x in range(4):
-        data = drift_stream.data()
-        best_threshold = None
-        best_distance = drift_position
-        for i in range(50, 80, 1):
-            threshold = i / 100
-            eddm = EDDM(train_instances=2000, error_threshold=threshold)
-            drift_index = eddm.analyze(data=data) or 0
-            if abs(drift_index - drift_end) < best_distance:
-                best_threshold = threshold
-                best_distance = abs(drift_index - drift_end)
-        print(f"EDDM Width {drift_width}: Best threshold:{best_threshold}; distance from drift_end: {best_distance}")'''
+while len(parameters) < 15 and False:
+    position = randint(10000, 1000000)
+    width = randint(200, 200000)
+    if position - width - 10000 < 0:
+        continue
+    parameters.append((position, width))
 
+out = ""
+eddm_time = 0
+pht_time = 0
+win_time = 0
+tests_time = []
 
-'''for drift_width in [2000, 5000, 8000, 13000]:
-    drift_position = 50000
-    drift_start = drift_position - drift_width/2
-    drift_end = drift_start + drift_width
-    drift_stream = DriftStream(drift_position, drift_width)
+for i, (position, width) in enumerate(parameters):
+    print(f"Test {i+1}")
+    test_start = datetime.now()
+    drift_stream = DriftStream(position, width)
+    data = drift_stream.data()
+    out += f"{i+1} & {position} & {width}"
 
-    for x in range(4):
-        data = drift_stream.data()
-        best_threshold = None
-        best_distance = drift_position
-        for i in range(4000, 5000, 50):
-            threshold = i / 1
-            pht = PageHinkley(train_instances=2000, threshold=threshold, alpha=0.999)
-            drift_index = pht.analyze(data=data) or 0
-            if abs(drift_index - drift_position) < best_distance:
-                best_threshold = threshold
-                best_distance = abs(drift_index - drift_position)
-        print(f"PHT Width {drift_width}: Best threshold:{best_threshold}; distance from drift_end: {best_distance}")
-'''
+    start = datetime.now()
+    eddm = EDDM(train_instances=2000, error_threshold=0.7)
+    drift = eddm.analyze(data=data)
+    elapsed = (datetime.now() - start).total_seconds()
+    eddm_time += elapsed
+    out += f" & {drift} & {round(elapsed, 2)}"
 
-sums = OrderedDict()
-count = 0
-str1 = ""
-str2 = ""
-for x in range(4):
-    count += 1
-    str1 += str(count)
-    str2 += str(count)
-    for drift_width in [2000, 5000, 8000, 13000, 25000]:
-        drift_position = 50000
-        drift_start = drift_position - drift_width / 2
-        drift_end = drift_start + drift_width
-        drift_stream = DriftStream(drift_position, drift_width)
-        data = drift_stream.data()
+    start = datetime.now()
+    pht = PageHinkley(train_instances=2000, threshold=4500, alpha=0.999)
+    drift = pht.analyze(data=data)
+    elapsed = (datetime.now() - start).total_seconds()
+    pht_time += elapsed
+    out += f" & {drift} & {round(elapsed, 2)}"
 
-        window_manager = WindowManager(windows_number=2, window_size=5000, drift_threshold=0.4, step=10)
-        drift_index = window_manager.analyze(data=data) or 0
+    start = datetime.now()
+    window_manager = WindowManager(windows_number=2, window_size=5000, drift_threshold=0.4, step=10)
+    drift = window_manager.analyze(data=data)
+    elapsed = (datetime.now() - start).total_seconds()
+    win_time += elapsed
+    out += f" & {drift} & {round(elapsed, 2)}"
 
-        val1 = str(round((drift_index-drift_position)/drift_width, 2)).replace('.', ',')
-        while len(val1) < 4:
-            val1 += "0"
-        str1 += f" & {val1}"
-        str2 += f" & {str(int(drift_index-drift_start)).replace('.',',')}"
-
-        #print(f"{drift_width} - detected after {drift_index-drift_start}, relatively {(drift_index-drift_start)/drift_width}. ({drift_index})")
-
-    str1 += "\\\\\n"
-    str2 += "\\\\\n"
-
-print(str1)
-print(str2)
-'''
-
-drift_stream = DriftStream(50000, 2000)
-data = drift_stream.data()
-
-print("Page-Hinkley Test")
-pht = PageHinkley(train_instances=2000, threshold=5000, alpha=0.999)
-pht.analyze(data=data)
-print("_________________________________")
-
-print("Early Drift Detection Method")
-eddm = EDDM(train_instances=2000, error_threshold=0.7)
-eddm.analyze(data=data)
-print("_________________________________")
-
-print("My own window method :)")
-window_manager = WindowManager(windows_number=2, window_size=5000, drift_threshold=0.35, step=10)
-window_manager.analyze(data=data)
-print("_________________________________")
-
-'''
+    elapsed = (datetime.now() - test_start).total_seconds()
+    out += f" & {elapsed}\\\\\n"
+print(f"& & & & {round(eddm_time, 2)} & & {round(pht_time, 2)} & & {round(win_time, 2)} & {round(sum([eddm_time, pht_time, win_time]), 2)}")
