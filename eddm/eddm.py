@@ -2,16 +2,18 @@
 from datetime import datetime
 from typing import Tuple, List
 
-from common.common import get_cur_time_str
 from common.naive_bayers import naive_bayers_distance
 from common.running_stats import RunningVectorStatistics
 from common.vector import Vector
-from eddm.eddmstats import RunningEDDMStats, EDDMStats
+from eddm.eddm_stats import RunningEDDMStats, EDDMStats
 from config import SKIP_FIRST_LINE
 
 
 class EDDM:
+    # Class representing Early Drift Detection Method.
+
     def __init__(self, train_instances=100, error_threshold=0.75):
+        # The constructor.
         self.running_mean = RunningVectorStatistics()
         self.misprediction_distance_stats = RunningEDDMStats()
         self.maximum_misprediction_distance = EDDMStats()
@@ -19,8 +21,9 @@ class EDDM:
         self.error_threshold = error_threshold
 
     def analyze(self, data: List[Vector]):
+        # Process list of vectors.
         start = datetime.now()
-        error_counter = counter = 0
+        counter = 0
         for new_vector in data:
             counter += 1
             if self.running_mean.count < self.train_instances:
@@ -35,38 +38,41 @@ class EDDM:
                 last_error = counter
 
                 if self.is_error():
-                    error_counter = error_counter + 1
+                    if counter > self.train_instances * 2:
+                        print(
+                            f"Drift found after {counter} processed instances, took {(datetime.now() - start).total_seconds()} seconds")
+                    counter = last_error = 0
+                    self.reset()
+                    continue
 
-            if error_counter > 0:
-                if counter > self.train_instances*2:
-                    print(f"Drift found after {counter} processed instances, took {(datetime.now()-start).total_seconds()} seconds")
-                    return counter
-                error_counter = counter = last_error = 0
-                self.reset()
-                continue
         print(f"Processing of stream took {(datetime.now() - start).total_seconds()} seconds")
 
     def process_misprediction(self, number_of_processed_without_error):
+        # Process wrong prediction.
         self.misprediction_distance_stats.push(number_of_processed_without_error)
 
         if self.misprediction_distance_stats > self.maximum_misprediction_distance:
             self.maximum_misprediction_distance.cache_stats(self.misprediction_distance_stats)
 
     def is_error(self) -> bool:
+        # Check ratio of misprediction values and determine, whether drift happened.
         if not self.maximum_misprediction_distance:
             return False
         result = self.misprediction_distance_stats / self.maximum_misprediction_distance
         return result < self.error_threshold
 
     def reset(self):
+        # Reset method after drift occurred.
         self.misprediction_distance_stats.reset()
         self.maximum_misprediction_distance.reset()
         self.running_mean.reset()
 
     def train(self, new_vector: Vector):
+        # Train the classifier with new data
         self.running_mean.push(new_vector)
 
     def predict_class(self, new_vector):
+        # Predict classification for new data
         found_class = None
         highest_probability = 0
 
