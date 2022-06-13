@@ -20,9 +20,10 @@ class EDDM:
 
     def analyze(self, data: List[Vector]):
         start = datetime.now()
-        error_counter = counter = 0
+        error_counter = counter = total = 0
         for new_vector in data:
             counter += 1
+            total += 1
             if self.running_mean.count < self.train_instances:
                 self.train(new_vector)
                 last_error = counter
@@ -40,7 +41,7 @@ class EDDM:
             if error_counter > 0:
                 if counter > self.train_instances*2:
                     #print(f"Drift found after {counter} processed instances, took {(datetime.now()-start).total_seconds()} seconds")
-                    return counter
+                    return total
                 error_counter = counter = last_error = 0
                 self.reset()
                 continue
